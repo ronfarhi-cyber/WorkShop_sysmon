@@ -348,4 +348,3 @@ def check_file_path(path: str) -> bool:
 def check_driver_name(name: str) -> bool:
     return matches_any_pattern(known_driver_name_regexes, name)
 
-print(check_registry_path(r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run"))
