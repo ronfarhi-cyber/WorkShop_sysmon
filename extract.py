@@ -114,7 +114,53 @@ suspicious_registry_regexes = [
     # Print monitors / providers (DLL loading)
     r"^[^\\]+\\System\\CurrentControlSet\\Control\\Print\\Monitors(\\.*)?$",
     r"^[^\\]+\\System\\CurrentControlSet\\Control\\Print\\Providers(\\.*)?$",
+
+    # ----------------------------------------------------------------------
+    # ADDITIONAL REGISTRY PERSISTENCE LOCATIONS (extended)
+    # ----------------------------------------------------------------------
+
+    # Extra Winlogon persistence (VmApplet often abused)
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\VmApplet(\\.*)?$",
+
+    # Screensaver-based persistence (SCRNSAVE.EXE etc.)
+    # HKCU/HKU\<SID>\Control Panel\Desktop
+    r"^[^\\]+\\Control Panel\\Desktop(\\.*)?$",
+
+    # Netsh helper DLL persistence
+    # HKLM\Software\Microsoft\Netsh
+    r"^[^\\]+\\Software\\Microsoft\\Netsh(\\.*)?$",
+
+    # Terminal Services / RDP startup programs
+    # HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\rdpwd\StartupPrograms
+    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Terminal Server\\Wds\\rdpwd\\StartupPrograms(\\.*)?$",
+
+    # Terminal Services policies (InitialProgram, etc.)
+    # HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services
+    r"^[^\\]+\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services(\\.*)?$",
+
+    # SafeBoot AlternateShell (can replace explorer.exe in Safe Mode)
+    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot\\AlternateShell(\\.*)?$",
+
+    # TelemetryController persistence (CompatTelRunner abuse)
+    # HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\TelemetryController
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\TelemetryController(\\.*)?$",
+
+    # Svchost service group definitions (can hide malicious service groups)
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Svchost(\\.*)?$",
+
+    # HTML handler / browser hijack
+    # HKCR\htmlfile\shell\open\command and HKLM\Software\Classes\htmlfile\...
+    r"^[^\\]+\\Classes\\htmlfile\\shell\\open\\command(\\.*)?$",
+
+    # Autoruns-disabled subkey (can be abused to hide from startup tools)
+    # HKCU\Software\Microsoft\Windows\CurrentVersion\Run\AutorunsDisabled
+    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AutorunsDisabled(\\.*)?$",
+
+    # Extra StartupApproved locations (Startup folder state)
+    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder(\\.*)?$",
+    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderDisabled(\\.*)?$",
 ]
+
 
 
 suspicious_file_path_regexes = [
@@ -192,7 +238,47 @@ suspicious_file_path_regexes = [
     # Edge / Chrome / browser data – dropped binaries
     r"^C:\\Users\\[^\\]+\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\.+\.(exe|dll|scr|ps1|vbs|js)$",
     r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\.+\.(exe|dll|scr|ps1|vbs|js)$",
+
+    # ----------------------------------------------------------------------
+    # ADDITIONAL SUSPICIOUS FILE LOCATIONS (extended)
+    # ----------------------------------------------------------------------
+
+    # Any executable directly under Users\Public (not just Documents/Downloads/…)
+    r"^C:\\Users\\Public\\[^\\]+\.((exe|dll|scr|ps1|vbs|js|bat|cmd))$",
+
+    # Scheduled Tasks definitions – arbitrary tasks in Tasks\
+    r"^C:\\Windows\\System32\\Tasks\\.+$",
+    r"^C:\\Windows\\Tasks\\.+\.job$",
+
+    # Executables in rarely-used system folders (from Elastic rule)
+    r"^[A-Z]:\\PerfLogs\\.+\.exe$",
+    r"^[A-Z]:\\Intel\\.+\.(exe|dll|scr|sys)$",
+    r"^[A-Z]:\\AMD\\Temp\\.+\.(exe|dll|scr)$",
+    r"^C:\\Windows\\AppReadiness\\.+\.exe$",
+    r"^C:\\Windows\\ServiceState\\.+\.exe$",
+    r"^C:\\Windows\\security\\.+\.exe$",
+    r"^C:\\Windows\\Fonts\\.+\.exe$",
+    r"^C:\\Windows\\Prefetch\\.+\.exe$",
+    r"^C:\\Windows\\Help\\.+\.(exe|dll|scr)$",
+    r"^C:\\Windows\\assembly\\.+\.(exe|dll|scr)$",
+    r"^C:\\Windows\\debug\\.+\.(exe|dll|scr)$",
+    r"^C:\\Windows\\Panther\\.+\.(exe|dll|scr)$",
+
+    # ProgramData – known system names in wrong location (svchost, lsass, etc.)
+    r"^C:\\ProgramData\\[^\\]+\\(svchost|lsass|explorer|csrss|winlogon|smss)\.exe$",
+
+    # AppData\Roaming\Microsoft\Network – often abused by RATs
+    r"^C:\\Users\\[^\\]+\\AppData\\Roaming\\Microsoft\\Network\\.+\.(exe|dll|scr|ps1|vbs|js)$",
+
+    # Random EXE/DLL directly under user profile root (not just Desktop/Documents)
+    r"^C:\\Users\\[^\\]+\\[A-Za-z0-9 _\-]{3,}\.(exe|dll|scr|ps1|vbs|js)$",
+
+    # Suspicious executables in Windows\Logs / WaaS / CbsTemp etc.
+    r"^C:\\Windows\\Logs\\.+\.exe$",
+    r"^C:\\Windows\\WaaS\\.+\.exe$",
+    r"^C:\\Windows\\CbsTemp\\.+\.exe$",
 ]
+
 
 known_driver_name_regexes = [
     # Core Windows storage / filesystem
@@ -340,11 +426,22 @@ def matches_any_pattern(patterns: List[str], text: str) -> bool:
     return False
 
 def check_registry_path(path: str) -> bool:
+    """
+    The fucntion expact r"" string type
+    """
     return matches_any_pattern(suspicious_registry_regexes, path)
 
 def check_file_path(path: str) -> bool:
+    """
+    The fucntion expact r"" string type
+    """
     return matches_any_pattern(suspicious_file_path_regexes, path)
 
 def check_driver_name(name: str) -> bool:
+    """
+    The fucntion expact r"" string type
+    """
     return matches_any_pattern(known_driver_name_regexes, name)
 
+# exapmle:
+# print(check_registry_path(r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run"))
