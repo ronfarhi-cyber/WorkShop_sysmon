@@ -1,6 +1,9 @@
 import re
 import functools
 from typing import List
+import tldextract
+import requests
+
 
 suspicious_registry_regexes = [
     # Run / RunOnce / Policies / Wow6432Node
@@ -446,6 +449,68 @@ def check_driver_name(name: str) -> bool:
     The fucntion expact r"" string type
     """
     return matches_any_pattern(known_driver_name_regexes, name)
+
+
+@functools.cache
+def check_ip_or_domain(target: str):
+    """
+    Checks if a domain or IP is suspicious.
+
+    Returns:
+    - Reason/comments from AbuseIPDB if flagged
+    - 'suspicious tld' if domain has high-risk TLD
+    - None if not suspicious
+    """
+
+
+    ABUSEIPDB_API_KEY = "3ca59885ae1cb6b0e02b24582aa784d81e61dac37deb0a832b188c45db701a16f326caddbaf83ea1"
+    HIGH_RISK_TLDS = ['ir', 'kp', 'ru', 'sy', 'af', 'pk', 'iq']
+
+
+    # Step 1: Try AbuseIPDB first
+    abuseip_result = None
+    try:
+        response = requests.get(
+            "https://api.abuseipdb.com/api/v2/check",
+            headers={
+                "Key": ABUSEIPDB_API_KEY,
+                "Accept": "application/json"
+            },
+            params={
+                "ipAddress": target,
+                "maxAgeInDays": 90
+            },
+            timeout=30  # avoid hanging
+        )
+        if response.status_code == 200:
+            data = response.json()
+            if 'data' in data and data['data']['abuseConfidenceScore'] > 0:
+                reports = data['data'].get('reports', [])
+                if reports:
+                    abuseip_result = reports[0].get('comment', 'abuseip report found, reason unknown')
+                else:
+                    abuseip_result = "abuseip report found, reason unknown"
+        else:
+            print(f"AbuseIPDB API returned status code {response.status_code}, skipping AbuseIPDB check.")
+    except Exception as e:
+        print(f"AbuseIPDB check failed ({e}), skipping to TLD check.")
+
+    if abuseip_result:
+        return abuseip_result
+
+    # Step 2: Check TLD
+    extracted = tldextract.extract(target)
+    tld = extracted.suffix.lower()
+    if tld in HIGH_RISK_TLDS:
+        return "suspicious tld"
+
+    # Step 3: Nothing suspicious found
+    return None
+
+
+
+
+
 
 # exapmle:
 print(check_driver_name(r"http.sys"))
