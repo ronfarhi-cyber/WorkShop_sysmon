@@ -6,282 +6,95 @@ import requests
 
 
 suspicious_registry_regexes = [
-    # Run / RunOnce / Policies / Wow6432Node
+    # --- Autostart Run Keys ---
     r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Run(\\.*)?$",
     r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Run(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce(\\.*)?$",
-    r"^[^\\]+\\.DEFAULT\\Software\\Microsoft\\Windows\\CurrentVersion\\Run(\\.*)?$",
-    r"^[^\\]+\\.DEFAULT\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run(\\.*)?$",
     r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\RunServices(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnceEx(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnceEx(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnceEx(\\.*)?$",
+    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run(\\.*)?$",
 
-    # Winlogon
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Userinit(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Shell(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Taskman(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Notify(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\AppSetup(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\GinaDLL(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon(\\.*)?$",
+    # --- Winlogon Persistence ---
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\(Shell|Userinit|GinaDLL|VmApplet)(\\.*)?$",
 
-    # Shell / Explorer extensions
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SharedTaskScheduler(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SharedTaskScheduler(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Extensions\\Approved(\\.*)?$",
-
-    # Context menu handlers
-    r"^[^\\]+\\\*\\ShellEx\\ContextMenuHandlers(\\.*)?$",
-    r"^[^\\]+\\Directory\\ShellEx\\ContextMenuHandlers(\\.*)?$",
-    r"^[^\\]+\\AllFileSystemObjects\\ShellEx\\ContextMenuHandlers(\\.*)?$",
-
-    # AppInit / Windows global injection
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows(\\.*)?$",
+    # --- Global DLL Injection (AppInit_DLLs) ---
     r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows\\AppInit_DLLs(\\.*)?$",
     r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\Windows\\AppInit_DLLs(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows(\\.*)?$",
 
-    # Services / Session Manager
-    r"^[^\\]+\\System\\CurrentControlSet\\Services(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Session Manager(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Session Manager\\BootExecute(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Session Manager\\KnownDLLs(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Session Manager\\AppCertDlls(\\.*)?$",
+    # --- Session Manager Hooks ---
+    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Session Manager\\(AppCertDlls|BootExecute|KnownDLLs)(\\.*)?$",
 
-    # LSA packages
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Lsa(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Lsa\\Authentication Packages(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Lsa\\Notification Packages(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Lsa\\Security Packages(\\.*)?$",
+    # --- LSA Authentication Packages ---
+    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Lsa\\(Authentication Packages|Notification Packages|Security Packages)(\\.*)?$",
 
-    # IFEO / SilentProcessExit
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\SilentProcessExit(\\.*)?$",
-    r"^[^\\]+\\Software\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\SilentProcessExit(\\.*)?$",
+    # --- Image File Execution Options / SilentProcessExit ---
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\[^\\]+(\\.*)?$",
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\SilentProcessExit\\[^\\]+(\\.*)?$",
 
-    # StartupApproved / Shell folders
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders(\\.*)?$",
+    # --- Scheduled Tasks (TaskCache) ---
+    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\(Tree|Tasks)(\\.*)?$",
 
-    # Scheduled Tasks (TaskCache)
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks(\\.*)?$",
+    # --- StartupApproved (hidden startup entries) ---
+    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\(Run|Run32|StartupFolder)(\\.*)?$",
 
-    # SafeBoot / NetworkProvider
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot\\Minimal(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot\\Network(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\NetworkProvider\\Order(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\NetworkProvider\\ProviderOrder(\\.*)?$",
-
-    # IE hooks / toolbars
-    r"^[^\\]+\\Software\\Microsoft\\Internet Explorer\\URLSearchHooks(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Internet Explorer\\URLSearchHooks(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Internet Explorer\\Toolbar(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Internet Explorer\\Toolbar(\\.*)?$",
-
-    # File type open command hijacking
-    r"^[^\\]+\\exefile\\shell\\open\\command(\\.*)?$",
-    r"^[^\\]+\\comfile\\shell\\open\\command(\\.*)?$",
-    r"^[^\\]+\\batfile\\shell\\open\\command(\\.*)?$",
-    r"^[^\\]+\\cmdfile\\shell\\open\\command(\\.*)?$",
-    r"^[^\\]+\\piffile\\shell\\open\\command(\\.*)?$",
-    r"^[^\\]+\\scrfile\\shell\\open\\command(\\.*)?$",
-
-    # Active Setup
-    r"^[^\\]+\\Software\\Microsoft\\Active Setup\\Installed Components(\\.*)?$",
+    # --- Active Setup (Run-once user initialization) ---
     r"^[^\\]+\\Software\\Microsoft\\Active Setup\\Installed Components(\\.*)?$",
 
-    # Print monitors / providers (DLL loading)
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Print\\Monitors(\\.*)?$",
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\Print\\Providers(\\.*)?$",
+    # --- SafeBoot (persistence via Safe Mode) ---
+    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot\\(AlternateShell|Minimal|Network)(\\.*)?$",
 
-    # ----------------------------------------------------------------------
-    # ADDITIONAL REGISTRY PERSISTENCE LOCATIONS (extended)
-    # ----------------------------------------------------------------------
-
-    # Extra Winlogon persistence (VmApplet often abused)
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\VmApplet(\\.*)?$",
-
-    # Screensaver-based persistence (SCRNSAVE.EXE etc.)
-    # HKCU/HKU\<SID>\Control Panel\Desktop
-    r"^[^\\]+\\Control Panel\\Desktop(\\.*)?$",
-
-    # Netsh helper DLL persistence
-    # HKLM\Software\Microsoft\Netsh
-    r"^[^\\]+\\Software\\Microsoft\\Netsh(\\.*)?$",
-
-    # Terminal Services / RDP startup programs
-    # HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\rdpwd\StartupPrograms
+    # --- Terminal Server startup programs ---
     r"^[^\\]+\\System\\CurrentControlSet\\Control\\Terminal Server\\Wds\\rdpwd\\StartupPrograms(\\.*)?$",
 
-    # Terminal Services policies (InitialProgram, etc.)
-    # HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services
-    r"^[^\\]+\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services(\\.*)?$",
-
-    # SafeBoot AlternateShell (can replace explorer.exe in Safe Mode)
-    r"^[^\\]+\\System\\CurrentControlSet\\Control\\SafeBoot\\AlternateShell(\\.*)?$",
-
-    # TelemetryController persistence (CompatTelRunner abuse)
-    # HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\TelemetryController
-    r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\TelemetryController(\\.*)?$",
-
-    # Svchost service group definitions (can hide malicious service groups)
+    # --- Svchost service groups (malicious grouping) ---
     r"^[^\\]+\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Svchost(\\.*)?$",
 
-    # HTML handler / browser hijack
-    # HKCR\htmlfile\shell\open\command and HKLM\Software\Classes\htmlfile\...
-    r"^[^\\]+\\Classes\\htmlfile\\shell\\open\\command(\\.*)?$",
+    # --- ScreenSaver persistence (SCRNSAVE.EXE abuse) ---
+    r"^[^\\]+\\Control Panel\\Desktop(\\.*)?$",
 
-    # Autoruns-disabled subkey (can be abused to hide from startup tools)
-    # HKCU\Software\Microsoft\Windows\CurrentVersion\Run\AutorunsDisabled
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AutorunsDisabled(\\.*)?$",
-
-    # Extra StartupApproved locations (Startup folder state)
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder(\\.*)?$",
-    r"^[^\\]+\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolderDisabled(\\.*)?$",
+    # --- Netsh helper DLL injection ---
+    r"^[^\\]+\\Software\\Microsoft\\Netsh(\\.*)?$",
 ]
 
-
-
 suspicious_file_path_regexes = [
-    # Temp directories – executables / scripts
-    r"^C:\\Windows\\Temp\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^C:\\Windows\\Temp\\[A-Za-z0-9]{5,}\.(tmp|dat|bin|log)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Temp\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Temp\\[A-Za-z0-9]{6,}\.(tmp|dat|bin)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\LocalLow\\Temp\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
+    # --- Temp Executables / Scripts ---
+    r"^C:\\(Windows|Users\\[^\\]+\\AppData\\(Local|LocalLow))\\Temp\\.+\.(exe|dll|sys|scr|bat|cmd|ps1|vbs|js)$",
 
-    # AppData\Roaming / Local – generic suspicious binaries
-    r"^C:\\Users\\[^\\]+\\AppData\\(Local|Roaming)\\[A-Za-z0-9 _\-]{3,}\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\(Local|Roaming)\\[A-Za-z0-9]{6,}\\[A-Za-z0-9]{6,}\.(exe|dll|dat|bin)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Windows\\INetCache\\.+\.(exe|dll|scr|ps1|vbs|js)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Windows\\INetCookies\\.+\.(exe|dll|scr|ps1|vbs|js)$",
+    # --- AppData Local/Roaming Suspicious Binaries ---
+    r"^C:\\Users\\[^\\]+\\AppData\\(Local|Roaming)\\[A-Za-z0-9 _\-]{3,}\\[^\\]+\\.+\.(exe|dll|dat|bin|scr|ps1|vbs|js)$",
 
-    # Downloads / Desktop – risky script/exe types
-    r"^C:\\Users\\[^\\]+\\Downloads\\.+\.(exe|scr|ps1|vbs|js|jse|wsf|bat|cmd)$",
-    r"^C:\\Users\\[^\\]+\\Desktop\\.+\.(exe|scr|ps1|vbs|js|jse|wsf|bat|cmd)$",
-
-    # Startup folders (user + common)
+    # --- Startup Folders (User + All Users) ---
     r"^C:\\Users\\[^\\]+\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\.+\.(lnk|exe|vbs|js|cmd|bat|ps1)$",
     r"^C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\.+\.(lnk|exe|vbs|js|cmd|bat|ps1)$",
 
-    # ProgramData – random dirs with binaries
-    r"^C:\\ProgramData\\[A-Za-z0-9 _\-]{3,}\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^C:\\ProgramData\\[A-Za-z0-9]{6,}\\[A-Za-z0-9]{6,}\.(tmp|dat|bin|exe|dll)$",
+    # --- ProgramData hidden binaries ---
+    r"^C:\\ProgramData\\[A-Za-z0-9 _\-]{4,}\\.+\.(exe|dll|dat|bin)$",
+    r"^C:\\ProgramData\\Temp\\.+\.(exe|dll|sys|scr)$",
 
-    # Public user – executables in shared folders
-    r"^C:\\Users\\Public\\(Documents|Downloads|Music|Pictures|Videos)\\.+\.(exe|scr|ps1|vbs|js|bat|cmd)$",
-    r"^C:\\Users\\Public\\[A-Za-z0-9 _\-]{3,}\\.+\.(exe|scr|ps1|vbs|js|bat|cmd)$",
+    # --- Public / Shared Executables ---
+    r"^C:\\Users\\Public\\.+\.(exe|dll|scr|bat|cmd|ps1|vbs|js)$",
 
-    # Root of any drive – loose binaries
-    r"^[A-Z]:\\[^\\]{3,}\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^[A-Z]:\\[A-Za-z0-9 _\-]{3,}\\[A-Za-z0-9 _\-]{3,}\.(exe|dll|sys|scr)$",
+    # --- Random executables directly under drive root ---
+    r"^[A-Z]:\\[^\\]{3,}\.(exe|dll|sys|scr|ps1|bat|cmd|vbs|js)$",
 
-    # Recycle Bin – executables/scripts inside
-    r"^[A-Z]:\\\$RECYCLE\.BIN\\.+\.(exe|dll|scr|bat|cmd|ps1|vbs|js)$",
+    # --- Suspicious executables in Windows directories ---
+    r"^C:\\Windows\\(System32|SysWOW64)\\[A-Za-z0-9]{5,}\d{2}\.(exe|dll|sys)$",
+    r"^C:\\Windows\\Temp\\.+\.(exe|dll|sys|bat|cmd|ps1)$",
 
-    # Suspicious inside Windows directory (non-standard names)
-    r"^C:\\Windows\\[A-Za-z0-9 _\-]{4,}\.(exe|dll|scr|com|bat|cmd|ps1|vbs|js)$",
-    r"^C:\\Windows\\System32\\[A-Za-z0-9]{6,}\d{2}\.(exe|dll|sys)$",
-    r"^C:\\Windows\\SysWOW64\\[A-Za-z0-9]{6,}\d{2}\.(exe|dll|sys)$",
+    # --- Tasks & Jobs ---
+    r"^C:\\Windows\\(System32\\)?Tasks\\.+$",
 
-    # Spool / Print – abused for DLL drop
-    r"^C:\\Windows\\System32\\spool\\drivers\\color\\.+\.(exe|dll|scr)$",
-    r"^C:\\Windows\\System32\\spool\\drivers\\x64\\.+\.(exe|dll|scr)$",
+    # --- Prefetch / Fonts / Security folders abuse ---
+    r"^C:\\Windows\\(Prefetch|Fonts|security|assembly|debug)\\.+\.(exe|dll|scr)$",
 
-    # Hidden-ish random folders under user profile
-    r"^C:\\Users\\[^\\]+\\[A-Za-z0-9]{5,}\\[A-Za-z0-9]{5,}\.(exe|dll|dat|bin)$",
-
-    # AppData\Local\Microsoft\Windows\{random}\{random}.exe
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Windows\\[A-Za-z0-9]{6,}\\[A-Za-z0-9]{6,}\.(exe|dll|dat)$",
-
-    # AppData\Roaming\{random vendor}\{random product}\.exe
-    r"^C:\\Users\\[^\\]+\\AppData\\Roaming\\[A-Za-z0-9]{4,}\\[A-Za-z0-9]{4,}\.(exe|dll|dat)$",
-
-    # Temp under ProgramData
-    r"^C:\\ProgramData\\Temp\\.+\.(exe|dll|sys|scr|com|bat|cmd|ps1|vbs|js)$",
-
-    # Suspicious scripts dropped under AppData\Local\Temp subdirs
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Temp\\[A-Za-z0-9]{3,}\\.+\.(ps1|vbs|js|jse|wsf)$",
-
-    # MSI / setup-like names in Temp / AppData
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Temp\\(setup|install|update|patch)[A-Za-z0-9_\-]*\.(exe|msi|bat|cmd)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\(Temp|Temp\\[A-Za-z0-9]{3,})\\[A-Za-z0-9]{8,}\.(msi|cab|dat|bin)$",
-
-    # Office / Office-related temp executables
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Office\\.+\.(exe|dll|scr|ps1|vbs)$",
-
-    # OneDrive / Sync folders – executables
-    r"^C:\\Users\\[^\\]+\\OneDrive\\.+\.(exe|dll|scr|ps1|vbs|js)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\OneDrive\\.+\.(exe|dll|scr)$",
-
-    # Edge / Chrome / browser data – dropped binaries
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\.+\.(exe|dll|scr|ps1|vbs|js)$",
-    r"^C:\\Users\\[^\\]+\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\.+\.(exe|dll|scr|ps1|vbs|js)$",
-
-    # ----------------------------------------------------------------------
-    # ADDITIONAL SUSPICIOUS FILE LOCATIONS (extended)
-    # ----------------------------------------------------------------------
-
-    # Any executable directly under Users\Public (not just Documents/Downloads/…)
-    r"^C:\\Users\\Public\\[^\\]+\.((exe|dll|scr|ps1|vbs|js|bat|cmd))$",
-
-    # Scheduled Tasks definitions – arbitrary tasks in Tasks\
-    r"^C:\\Windows\\System32\\Tasks\\.+$",
-    r"^C:\\Windows\\Tasks\\.+\.job$",
-
-    # Executables in rarely-used system folders (from Elastic rule)
-    r"^[A-Z]:\\PerfLogs\\.+\.exe$",
-    r"^[A-Z]:\\Intel\\.+\.(exe|dll|scr|sys)$",
-    r"^[A-Z]:\\AMD\\Temp\\.+\.(exe|dll|scr)$",
-    r"^C:\\Windows\\AppReadiness\\.+\.exe$",
-    r"^C:\\Windows\\ServiceState\\.+\.exe$",
-    r"^C:\\Windows\\security\\.+\.exe$",
-    r"^C:\\Windows\\Fonts\\.+\.exe$",
-    r"^C:\\Windows\\Prefetch\\.+\.exe$",
-    r"^C:\\Windows\\Help\\.+\.(exe|dll|scr)$",
-    r"^C:\\Windows\\assembly\\.+\.(exe|dll|scr)$",
-    r"^C:\\Windows\\debug\\.+\.(exe|dll|scr)$",
-    r"^C:\\Windows\\Panther\\.+\.(exe|dll|scr)$",
-
-    # ProgramData – known system names in wrong location (svchost, lsass, etc.)
+    # --- Fake system processes in wrong locations ---
     r"^C:\\ProgramData\\[^\\]+\\(svchost|lsass|explorer|csrss|winlogon|smss)\.exe$",
 
-    # AppData\Roaming\Microsoft\Network – often abused by RATs
+    # --- AppData\Roaming\Microsoft\Network RAT persistence ---
     r"^C:\\Users\\[^\\]+\\AppData\\Roaming\\Microsoft\\Network\\.+\.(exe|dll|scr|ps1|vbs|js)$",
 
-    # Random EXE/DLL directly under user profile root (not just Desktop/Documents)
+    # --- Random EXE/DLL in user root ---
     r"^C:\\Users\\[^\\]+\\[A-Za-z0-9 _\-]{3,}\.(exe|dll|scr|ps1|vbs|js)$",
-
-    # Suspicious executables in Windows\Logs / WaaS / CbsTemp etc.
-    r"^C:\\Windows\\Logs\\.+\.exe$",
-    r"^C:\\Windows\\WaaS\\.+\.exe$",
-    r"^C:\\Windows\\CbsTemp\\.+\.exe$",
 ]
+
 
 
 known_driver_name_regexes = [
