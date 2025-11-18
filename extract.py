@@ -1,4 +1,5 @@
 import re
+import functools
 from typing import List
 
 suspicious_registry_regexes = [
@@ -425,18 +426,21 @@ def matches_any_pattern(patterns: List[str], text: str) -> bool:
             return True
     return False
 
+@functools.cache
 def check_registry_path(path: str) -> bool:
     """
     The fucntion expact r"" string type
     """
     return matches_any_pattern(suspicious_registry_regexes, path)
 
+@functools.cache
 def check_file_path(path: str) -> bool:
     """
     The fucntion expact r"" string type
     """
     return matches_any_pattern(suspicious_file_path_regexes, path)
 
+@functools.cache
 def check_driver_name(name: str) -> bool:
     """
     The fucntion expact r"" string type
@@ -444,4 +448,4 @@ def check_driver_name(name: str) -> bool:
     return matches_any_pattern(known_driver_name_regexes, name)
 
 # exapmle:
-# print(check_registry_path(r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run"))
+print(check_driver_name(r"http.sys"))
