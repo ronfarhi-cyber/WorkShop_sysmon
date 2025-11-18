@@ -513,4 +513,4 @@ def check_ip_or_domain(target: str):
 
 
 # exapmle:
-print(check_driver_name(r"http.sys"))
+# print(check_driver_name(r"http.sys"))
